@@ -1,6 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import Vec3, Vec4, Quat, BitMask32
-from panda3d.core import CollisionRay, CollisionHandlerFloor, CollisionNode
+from panda3d.core import CollisionRay, CollisionHandlerQueue, CollisionNode, CollisionHandlerFloor
 
 
 class LightCycle(DirectObject):
@@ -27,39 +27,40 @@ class LightCycle(DirectObject):
         self.colNode.setIntoCollideMask(BitMask32.allOff())
         
         self.colNodePath = self.cycle.attachNewNode(self.colNode)
-        self.colHandler = CollisionHandlerQueue()
+        self.colHandler = CollisionHandlerFloor()
         collisionTraverser.addCollider(self.colNodePath, self.colHandler)
         
-    def setUp(upVect):
+    def setUp(self, upVect):
         rightVect = self.cycle.getQuat().getRight()
         forVect = upVect.cross(rightVect)
         self.cycle.lookAt(self.cycle.getPos() + forVect, upVect)
 
-    def moveForwardBy(dist):
+    def moveForwardBy(self, dist):
         forVect = self.cycle.getQuat().getForward()
         positionIncrement = forVect * dist
         newPos = self.cycle.getPos() + positionIncrement
         self.cycle.setPos(newPos)
 
-    def rotateStep(numSteps):
+    def rotateStep(self, numSteps):
         angle = 90*numSteps
         q = Quat()
         q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
         self.cycle.setQuat(self.cycle.getQuat()*q)
 
     #TODO: Add functions for ground-collision handling...
-    def adjustToTerrain():
+    def adjustToTerrain(self):
         """During collision handling, adjust height/orientation to match
            terrain. Assumes that the collision traverser has had .traverse()
            called."""
-        entries = self.colHandler.getEntries()
+        pass
+        #entries = self.colHandler.getEntries()
         #entries.sort
         #z =
         #newNorm =
-        self.cycle.setZ(z)
-        r = self.cycle.getQuat().getRight()
-        f = newNorm.cross(r)
-        self.cycle.lookAt(self.cycle.getPos() + v, newNorm)
+        #self.cycle.setZ(z)
+        #r = self.cycle.getQuat().getRight()
+        #f = newNorm.cross(r)
+        #self.cycle.lookAt(self.cycle.getPos() + v, newNorm)
 
     
         
