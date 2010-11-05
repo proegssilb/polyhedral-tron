@@ -12,7 +12,7 @@ class LightCycle(DirectObject):
     cycle = None
 
     def __init__(self, parentNode, startingPoint, collisionTraverser):
-        self.cycle = loader.loadModel('lightcycle')
+        self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
         self.cycle.setPos(startingPoint)
 
