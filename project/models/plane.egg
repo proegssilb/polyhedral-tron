@@ -1,0 +1,25 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R91" }
+
+<Group> Plane {
+  <VertexPool> Plane {
+    <Vertex> 0 {
+      1.0 0.999999940395 0.0
+    }
+    <Vertex> 1 {
+      -0.999999642372 1.00000035763 0.0
+    }
+    <Vertex> 2 {
+      -1.00000011921 -0.999999821186 0.0
+    }
+    <Vertex> 3 {
+      1.0 -1.0 0.0
+    }
+  }
+  <Polygon> {
+    <Normal> { 0.000000 -0.000000 1.000000
+    }
+    <VertexRef> { 0 1 2 3 <Ref> { Plane } }
+  }
+}
