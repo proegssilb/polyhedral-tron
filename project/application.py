@@ -1,9 +1,12 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.ShowBase import ShowBase
+from direct.task import Task
 from panda3d.core import Vec3, Vec4, Point3, VBase4
 from panda3d.core import CollisionTraverser
 from panda3d.core import Light, Spotlight, PointLight, AmbientLight, PerspectiveLens
 from lightcycle import LightCycle
+
+MAX_STEPS = 2
 
 class PolyhedralTron(ShowBase):
 
@@ -12,18 +15,24 @@ class PolyhedralTron(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         self.world = loader.loadModel('models/icosahedron')
-        #TODO: Change this to 20.0 or 50.0; 10.0 for the sake of debugging.
-        self.world.setScale(10.0)
+        #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
+        #      and re-export. Using scale 10 for now.
+        #self.world.setScale(10.0)
+        self.world.setHpr(0,0,90)
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
-        self.playerCycle = LightCycle(render, Vec3(0,0,0), self.collTrav)
+        self.playerCycle = LightCycle(render, Vec3(0,0,-1), self.collTrav)
         self.setupLights()
         self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
+        self.steps = 0
         
     def groundColTask(self, task):
-        print "Testing collisions..."
+        #print "Testing collisions..."
         self.collTrav.traverse(render)
         self.playerCycle.adjustToTerrain()
+        if self.steps < MAX_STEPS:
+            self.steps += 1
+            return Task.cont
 
     def setupLights(self):
         #Setup lights
