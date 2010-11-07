@@ -6,7 +6,8 @@ from panda3d.core import CollisionTraverser
 from panda3d.core import Light, Spotlight, PointLight, AmbientLight, PerspectiveLens
 from lightcycle import LightCycle
 
-MAX_STEPS = 2
+MAX_STEPS = 0
+ENABLE_STEPWISE = False
 
 class PolyhedralTron(ShowBase):
 
@@ -19,20 +20,28 @@ class PolyhedralTron(ShowBase):
         #      and re-export. Using scale 10 for now.
         #self.world.setScale(10.0)
         self.world.setHpr(0,0,90)
+        self.world.setColor(0.0, 1.0, 0.0)
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
-        self.playerCycle = LightCycle(render, Vec3(0,0,-1), self.collTrav)
+        self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
         self.setupLights()
         self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
         self.steps = 0
+        if ENABLE_STEPWISE:
+            self.accept('space', self.doStep)
+
+    def doStep(self):
+        self.taskMgr.add(self.groundColTask, 'GroundCollisionHandlingTask')
         
     def groundColTask(self, task):
         #print "Testing collisions..."
+        self.playerCycle.moveForwardBy(0.05)
         self.collTrav.traverse(render)
         self.playerCycle.adjustToTerrain()
-        if self.steps < MAX_STEPS:
+        if self.steps < MAX_STEPS or MAX_STEPS == 0:
             self.steps += 1
-            return Task.cont
+            if not ENABLE_STEPWISE:
+                return Task.cont
 
     def setupLights(self):
         #Setup lights
