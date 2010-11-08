@@ -43,7 +43,12 @@ class LightCycle(DirectObject):
         self.cycle.setPos(newPos)
 
     def rotateStep(self, numSteps):
-        angle = 90*numSteps
+        """Rotate a given number of steps.
+        Rotates in 90-degree steps around this cycle's current up axis.
+        Left is negative, right is positive.
+        """
+        print 'Rotating...', numSteps
+        angle = -90*numSteps
         q = Quat()
         q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
         self.cycle.setQuat(self.cycle.getQuat()*q)
@@ -55,7 +60,7 @@ class LightCycle(DirectObject):
            called."""
         entries = self.colHandler.getEntries()
         newP, norm, count = Point3(),  Vec3(), 0
-        print 'Entries:', len(entries)
+        #print 'Entries:', len(entries)
         for ent in entries[:]:
             p1 = ent.getSurfacePoint(render)
             p2 = self.cycle.getPos()
@@ -63,12 +68,12 @@ class LightCycle(DirectObject):
             dot = p1.dot(p2)
             mag1 = p1.length()
             mag2 = p2.length()
-            print "Collision:"
-            print '    surfPos:', p1
-            print '    cycPos:', p2
-            print '    Dot product:', dot
-            print '    abs(surfPos):', mag1
-            print '    abs(cycPos):', mag2
+            #print "Collision:"
+            #print '    surfPos:', p1
+            #print '    cycPos:', p2
+            #print '    Dot product:', dot
+            #print '    abs(surfPos):', mag1
+            #print '    abs(cycPos):', mag2
             if not (dot > 0 and mag1 >= mag2 - 0.5):
             #if False:
                 entries.remove(ent)
@@ -79,9 +84,9 @@ class LightCycle(DirectObject):
         if count == 0:
             return
         norm.normalize()
-        print 'Results from %s items:' % count
-        print '    New Position:', newP, newP / count
-        print '    New normal:', norm
+        #print 'Results from %s items:' % count
+        #print '    New Position:', newP, newP / count
+        #print '    New normal:', norm
         newP = newP / count
         norm.normalize()
         self.cycle.setPos(newP)
