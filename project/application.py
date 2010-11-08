@@ -23,6 +23,8 @@ class PolyhedralTron(ShowBase):
         #self.world.setScale(10.0)
         self.world.setHpr(0,0,90)
         self.world.setColor(0.0, 1.0, 0.0)
+        self.worldTex = loader.loadTexture('models/greenTriTex.png')
+        self.world.setTexture(self.worldTex)
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
         self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
@@ -44,7 +46,7 @@ class PolyhedralTron(ShowBase):
         self.light.setColor(Vec4(1, 1, 1, 1))
         self.light.setLens(PerspectiveLens())
         self.lPath = render.attachNewNode(self.light)
-        self.lPath.setPos(Point3(15, 0, 0))
+        self.lPath.setPos(Point3(0, 0, 0))
         render.setLight(self.lPath)
         
         self.alight = AmbientLight('alight')
@@ -80,7 +82,7 @@ class PolyhedralTron(ShowBase):
     
     def groundColTask(self, task):
         #print "Testing collisions..."
-        self.playerCycle.moveForwardBy(0.05)
+        self.playerCycle.moveForwardBy(0.25)
         self.collTrav.traverse(render)
         self.playerCycle.adjustToTerrain()
         if self.steps < MAX_STEPS or MAX_STEPS == 0:
