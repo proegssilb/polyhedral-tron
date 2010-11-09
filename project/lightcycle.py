@@ -3,6 +3,8 @@ from panda3d.core import Vec3, Vec4, Quat, BitMask32, Point3
 from panda3d.core import CollisionRay, CollisionHandlerQueue, CollisionNode, CollisionHandlerFloor
 import math
 
+from wall import Wall
+
 class LightCycle(DirectObject):
     """A class to represent a lightcycle in Tron
     Provides lightcycle-specific convenience functions, helps group per-cycle
@@ -10,6 +12,9 @@ class LightCycle(DirectObject):
     """
 
     cycle = None
+    wallList = []
+    currentWall = None
+    
 
     def __init__(self, parentNode, startingPoint, collisionTraverser):
         self.cycle = loader.loadModel('models/lightcycle')
@@ -30,6 +35,9 @@ class LightCycle(DirectObject):
         self.colNodePath.show()
         self.colHandler = CollisionHandlerQueue()
         collisionTraverser.addCollider(self.colNodePath, self.colHandler)
+
+        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1, self.cycle.getQuat())
+        self.currentWall.wall.setCollideMask(BitMask32(0x00))
         
     def setUp(self, upVect):
         rightVect = self.cycle.getQuat().getRight()
@@ -37,6 +45,12 @@ class LightCycle(DirectObject):
         self.cycle.lookAt(self.cycle.getPos() + forVect, upVect)
 
     def moveForwardBy(self, dist):
+        if (self.currentWall.getDistMoved() >= 1.25):
+            self.wallList.append(self.currentWall)
+            self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1, self.cycle.getQuat())
+            self.currentWall.wall.setCollideMask(BitMask32(0x00))
+        else:
+            self.currentWall.moveForwardBy(self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1,dist)
         forVect = self.cycle.getQuat().getForward()
         positionIncrement = forVect * dist
         newPos = self.cycle.getPos() + positionIncrement
@@ -52,6 +66,8 @@ class LightCycle(DirectObject):
         q = Quat()
         q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
         self.cycle.setQuat(self.cycle.getQuat()*q)
+        #self.currentWall = Wall(render, self.cycle.getPos(), self.cycle.getQuat())
+        #self.wallList.append(self.currentWall)
 
     #TODO: Add functions for ground-collision handling...
     def adjustToTerrain(self):
@@ -91,6 +107,9 @@ class LightCycle(DirectObject):
         norm.normalize()
         self.cycle.setPos(newP)
         self.setUp(norm)
+        self.wallList.append(self.currentWall)
+        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1, self.cycle.getQuat())
+        self.currentWall.wall.setCollideMask(BitMask32(0x00))
         #newNorm =
 
 

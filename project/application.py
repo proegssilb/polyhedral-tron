@@ -24,7 +24,7 @@ class PolyhedralTron(ShowBase):
         #      and re-export. Using scale 10 for now.
         #self.world.setScale(10.0)
         self.world.setHpr(0,0,90)
-        self.world.setColor(1, 1, 1)
+        self.world.setColor(0.0, 1.0, 0.0)
         self.worldTex = loader.loadTexture('models/greenTriTex.png')
         self.world.setTexture(self.worldTex)
         self.world.reparentTo(render)
@@ -46,7 +46,7 @@ class PolyhedralTron(ShowBase):
         exit()
 
     def setupCamera(self):
-        self.disableMouse()
+        #self.disableMouse()
         self.camera.setPos(1, -4, 2)
         self.camera.lookAt(self.playerCycle.cycle)
         self.taskMgr.add(self.cameraMoveTask, 'cameraMoveTask')
