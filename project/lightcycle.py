@@ -14,7 +14,7 @@ class LightCycle(DirectObject):
     cycle = None
     wallList = []
     currentWall = None
-    wallOffset = -1
+    wallOffset = -0.75
     
 
     def __init__(self, parentNode, startingPoint, collisionTraverser):
