@@ -14,6 +14,7 @@ class LightCycle(DirectObject):
     cycle = None
     wallList = []
     currentWall = None
+    wallOffset = -1
     
 
     def __init__(self, parentNode, startingPoint, collisionTraverser):
@@ -36,7 +37,7 @@ class LightCycle(DirectObject):
         self.colHandler = CollisionHandlerQueue()
         collisionTraverser.addCollider(self.colNodePath, self.colHandler)
 
-        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1, self.cycle.getQuat())
+        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
         self.currentWall.wall.setCollideMask(BitMask32(0x00))
         
     def setUp(self, upVect):
@@ -45,16 +46,14 @@ class LightCycle(DirectObject):
         self.cycle.lookAt(self.cycle.getPos() + forVect, upVect)
 
     def moveForwardBy(self, dist):
-        if (self.currentWall.getDistMoved() >= 1.25):
-            self.wallList.append(self.currentWall)
-            self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1, self.cycle.getQuat())
-            self.currentWall.wall.setCollideMask(BitMask32(0x00))
-        else:
-            self.currentWall.moveForwardBy(self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1,dist)
         forVect = self.cycle.getQuat().getForward()
         positionIncrement = forVect * dist
         newPos = self.cycle.getPos() + positionIncrement
         self.cycle.setPos(newPos)
+        if (self.currentWall.getDistMoved() >= 1.0):
+            self.newWall()
+        else:
+            self.currentWall.moveForwardBy(self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset,dist)
 
     def rotateStep(self, numSteps):
         """Rotate a given number of steps.
@@ -66,8 +65,7 @@ class LightCycle(DirectObject):
         q = Quat()
         q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
         self.cycle.setQuat(self.cycle.getQuat()*q)
-        #self.currentWall = Wall(render, self.cycle.getPos(), self.cycle.getQuat())
-        #self.wallList.append(self.currentWall)
+        self.newWall()
 
     #TODO: Add functions for ground-collision handling...
     def adjustToTerrain(self):
@@ -105,14 +103,19 @@ class LightCycle(DirectObject):
         #print '    New normal:', norm
         newP = newP / count
         norm.normalize()
+        up = self.cycle.getQuat().getUp()
         self.cycle.setPos(newP)
         self.setUp(norm)
-        self.wallList.append(self.currentWall)
-        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * -0.1, self.cycle.getQuat())
-        self.currentWall.wall.setCollideMask(BitMask32(0x00))
+        if (up.angleDeg(norm) > 5):
+            self.newWall()
         #newNorm =
 
 
-    
+    def newWall(self):
+        self.wallList.append(self.currentWall)
+        self.currentWall.wall.setCollideMask(BitMask32.bit(0))
+        self.currentWall.wall.setTag('wall','1')
+        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
+        self.currentWall.wall.setCollideMask(BitMask32(0x00))
         
         
