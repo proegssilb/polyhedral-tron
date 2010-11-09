@@ -4,7 +4,7 @@
 
 <Material> Material {
   <Scalar> diffr {0.0}
-  <Scalar> diffg {0.675714612007}
+  <Scalar> diffg {0.675700008869}
   <Scalar> diffb {1.0}
   <Scalar> specr {0.25}
   <Scalar> specg {0.25}
@@ -12,6 +12,7 @@
   <Scalar> shininess {12.5}
 }
 <Group> Cube {
+  <Collide> { Polyset keep descend }
   <VertexPool> Cube {
     <Vertex> 0 {
       0.0129999518394 0.62500500679 0.0
