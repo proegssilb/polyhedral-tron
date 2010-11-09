@@ -110,6 +110,7 @@ class MenuDemo(ShowBase):
 
     def startGame(self):
         print "Start game"
+        self.mainMenu.hide()
 
     def quit(self):
         exit()
