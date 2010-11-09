@@ -4,6 +4,8 @@ from direct.task import Task
 from panda3d.core import Vec3, Vec4, Point3, VBase4
 from panda3d.core import CollisionTraverser
 from panda3d.core import Light, Spotlight, PointLight, AmbientLight, PerspectiveLens
+
+from menu import MainMenu
 from lightcycle import LightCycle
 
 MAX_STEPS = 0
@@ -33,6 +35,15 @@ class PolyhedralTron(ShowBase):
         self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
         self.registerKeys()
         self.steps = 0
+
+        self.menu = MainMenu(self)
+
+    def startGame(self):
+        self.menu.hide()
+        print "Uh... start the game, 'kay?"
+
+    def quit(self):
+        exit()
 
     def setupCamera(self):
         self.disableMouse()
@@ -66,6 +77,7 @@ class PolyhedralTron(ShowBase):
         self.accept('arrow_left', self.playerCycle.rotateStep, [-1])
         self.accept('arrow_right', self.playerCycle.rotateStep, [1])
         self.accept('escape', exit)
+        self.accept('q', exit)
         
     ###    TASKS    ###
     def doStep(self, task):
