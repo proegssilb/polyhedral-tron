@@ -1,7 +1,8 @@
 from direct.showbase.DirectObject import DirectObject
-from panda3d.core import Vec3, Vec4, Quat, BitMask32, Point3
+from direct.interval.IntervalGlobal import *
+from panda3d.core import Vec3, Vec4, Quat, BitMask32, Point3, VBase3
 from panda3d.core import CollisionRay, CollisionHandlerQueue, CollisionNode, CollisionHandlerFloor
-import math
+import math, sys
 
 from wall import Wall
 
@@ -15,16 +16,18 @@ class LightCycle(DirectObject):
     wallList = []
     currentWall = None
     wallOffset = -0.75
+    enable = True
     
 
     def __init__(self, parentNode, startingPoint, collisionTraverser):
         self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
         self.cycle.setPos(startingPoint)
+        self.enable = True
 
         #Collision related stuff...
         self.groundRay = CollisionRay()
-        self.groundRay.setOrigin(0,0, 60)
+        self.groundRay.setOrigin(0,0, 5)
         self.groundRay.setDirection(0,0,-1)
         
         self.colNode = CollisionNode('cycleRay-%s' % id(self))
@@ -46,6 +49,8 @@ class LightCycle(DirectObject):
         self.cycle.lookAt(self.cycle.getPos() + forVect, upVect)
 
     def moveForwardBy(self, dist):
+        if not self.enable:
+            return
         forVect = self.cycle.getQuat().getForward()
         positionIncrement = forVect * dist
         newPos = self.cycle.getPos() + positionIncrement
@@ -60,6 +65,8 @@ class LightCycle(DirectObject):
         Rotates in 90-degree steps around this cycle's current up axis.
         Left is negative, right is positive.
         """
+        if not self.enable:
+            return
         print 'Rotating...', numSteps
         angle = -90*numSteps
         q = Quat()
@@ -67,18 +74,20 @@ class LightCycle(DirectObject):
         self.cycle.setQuat(self.cycle.getQuat()*q)
         self.newWall()
 
-    #TODO: Add functions for ground-collision handling...
     def adjustToTerrain(self):
         """During collision handling, adjust height/orientation to match
            terrain. Assumes that the collision traverser has had .traverse()
            called."""
+        if not self.enable: return
         entries = self.colHandler.getEntries()
         newP, norm, count = Point3(),  Vec3(), 0
         #print 'Entries:', len(entries)
         for ent in entries[:]:
+            if ent.getIntoNodePath().hasNetTag('wall'):
+                #The tag 'wall' is only given to walls.
+                self.explode()
             p1 = ent.getSurfacePoint(render)
             p2 = self.cycle.getPos()
-            #pdir(p1)
             dot = p1.dot(p2)
             mag1 = p1.length()
             mag2 = p2.length()
@@ -108,14 +117,22 @@ class LightCycle(DirectObject):
         self.setUp(norm)
         if (up.angleDeg(norm) > 5):
             self.newWall()
-        #newNorm =
-
 
     def newWall(self):
+        if not self.enable:
+            return
         self.wallList.append(self.currentWall)
         self.currentWall.wall.setCollideMask(BitMask32.bit(0))
         self.currentWall.wall.setTag('wall','1')
         self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
-        self.currentWall.wall.setCollideMask(BitMask32(0x00))
+        #self.currentWall.wall.setCollideMask(BitMask32(0x00))
+        self.currentWall.wall.setCollideMask(BitMask32.bit(0))
+    
+    def explode(self):
+        self.enable = False
+        li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
+        f = Func(self.die)
+        Sequence(li, li, li, li, name='SpinAndDie').loop()
         
-        
+    def die(self):
+        sys.exit()

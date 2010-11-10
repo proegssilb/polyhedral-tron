@@ -97,6 +97,8 @@ class MenuDemo(ShowBase):
 
         # This doesn't work on Tom's computer.  Perhaps someone
         # else should try it.
+        # This didn't have the intended effect on David's
+        # computer. Not work for GUI?
         #filters = CommonFilters(base.win, base.cam)
         #if not filters.setBloom(desat=0, ):
         #    print "Failed to enable bloom filter"

@@ -21,18 +21,19 @@ class PolyhedralTron(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
         base.win.setClearColor(VBase4(0, 0, 0, 0))
-        self.world = loader.loadModel('models/icosahedron')
+        self.modelFile = 'models/icosahedron'
         self.menu = MainMenu(self)
-        self.world.setHpr(0,0,90)
-        self.world.setColor(1, 1, 1)
-        self.worldTex = loader.loadTexture('models/greenTriTex.png')
-        self.world.setTexture(self.worldTex)
 
     def startGame(self):
         self.menu.hide()
         #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
         #      and re-export. Using scale 10 for now.
         #self.world.setScale(10.0)
+        self.world = loader.loadModel(self.modelFile)
+        self.world.setHpr(0,0,90)
+        self.world.setColor(1, 1, 1)
+        self.worldTex = loader.loadTexture('models/greenTriTex.png')
+        self.world.setTexture(self.worldTex)
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
         self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
