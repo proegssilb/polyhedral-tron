@@ -7,6 +7,7 @@ from panda3d.core import Light, Spotlight, PointLight, AmbientLight, Perspective
 
 from menu import MainMenu
 from lightcycle import LightCycle
+from cameracontroller import CameraController
 
 MAX_STEPS = 0
 ENABLE_STEPWISE = False
@@ -46,10 +47,10 @@ class PolyhedralTron(ShowBase):
         exit()
 
     def setupCamera(self):
-        #self.disableMouse()
+        self.cameraTracker = CameraController(self, self.camera, self.playerCycle.cycle, self.collTrav)
         self.camera.setPos(1, -4, 2)
         self.camera.lookAt(self.playerCycle.cycle)
-        self.taskMgr.add(self.cameraMoveTask, 'cameraMoveTask')
+        #self.taskMgr.add(self.cameraMoveTask, 'cameraMoveTask')
 
     def setupLights(self):
         #Setup lights
@@ -95,8 +96,10 @@ class PolyhedralTron(ShowBase):
     def groundColTask(self, task):
         #print "Testing collisions..."
         self.playerCycle.moveForwardBy(0.25)
+        self.cameraTracker.move(task)
         self.collTrav.traverse(render)
         self.playerCycle.adjustToTerrain()
+        #self.cameraTracker.adjustToTerrain()
         if self.steps < MAX_STEPS or MAX_STEPS == 0:
             self.steps += 1
             if not ENABLE_STEPWISE:
