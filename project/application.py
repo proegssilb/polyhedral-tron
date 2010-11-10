@@ -20,28 +20,34 @@ class PolyhedralTron(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
+        base.win.setClearColor(VBase4(0, 0, 0, 0))
         self.world = loader.loadModel('models/icosahedron')
-        #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
-        #      and re-export. Using scale 10 for now.
-        #self.world.setScale(10.0)
-        self.world.setHpr(0,0,90)
-        self.world.setColor(0.0, 1.0, 0.0)
-        self.worldTex = loader.loadTexture('models/greenTriTex.png')
-        self.world.setTexture(self.worldTex)
-        self.world.reparentTo(render)
-        self.collTrav = CollisionTraverser('GroundTrav')
-        self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
-        self.setupLights()
-        self.setupCamera()
-        self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
-        self.registerKeys()
-        self.steps = 0
 
         self.menu = MainMenu(self)
 
+        self.world.setHpr(0,0,90)
+        self.world.setColor(1, 1, 1)
+        self.worldTex = loader.loadTexture('models/greenTriTex.png')
+        self.world.setTexture(self.worldTex)
+        self.world.reparentTo(render)
+
+        self.playerCycle = None
+
+        self.setupLights()
+        self.registerKeys()
+
     def startGame(self):
         self.menu.hide()
-        print "Uh... start the game, 'kay?"
+        #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
+        #      and re-export. Using scale 10 for now.
+        #self.world.setScale(10.0)
+        self.collTrav = CollisionTraverser('GroundTrav')
+        self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
+        self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
+        self.steps = 0
+
+        self.setupCamera()
+
 
     def quit(self):
         exit()
@@ -75,10 +81,18 @@ class PolyhedralTron(ShowBase):
         render.setLight(self.l2p)
 
     def registerKeys(self):
-        self.accept('arrow_left', self.playerCycle.rotateStep, [-1])
-        self.accept('arrow_right', self.playerCycle.rotateStep, [1])
+        self.accept('arrow_left', self.keyLeft)
+        self.accept('arrow_right', self.keyRight)
         self.accept('escape', exit)
         self.accept('q', exit)
+
+    def keyLeft(self):
+        if self.playerCycle is not None:
+            self.playerCycle.rotateStep(-1)
+
+    def keyRight(self):
+        if self.playerCycle is not None:
+            self.playerCycle.rotateStep(1)
         
     ###    TASKS    ###
     def doStep(self, task):
