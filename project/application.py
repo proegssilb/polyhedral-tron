@@ -22,32 +22,25 @@ class PolyhedralTron(ShowBase):
         ShowBase.__init__(self)
         base.win.setClearColor(VBase4(0, 0, 0, 0))
         self.world = loader.loadModel('models/icosahedron')
-
         self.menu = MainMenu(self)
-
         self.world.setHpr(0,0,90)
         self.world.setColor(1, 1, 1)
         self.worldTex = loader.loadTexture('models/greenTriTex.png')
         self.world.setTexture(self.worldTex)
-        self.world.reparentTo(render)
-
-        self.playerCycle = None
-
-        self.setupLights()
-        self.registerKeys()
 
     def startGame(self):
         self.menu.hide()
         #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
         #      and re-export. Using scale 10 for now.
         #self.world.setScale(10.0)
+        self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
         self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
+        self.setupCamera()
+        self.setupLights()
+        self.registerKeys()
         self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
         self.steps = 0
-
-        self.setupCamera()
-
 
     def quit(self):
         exit()
@@ -95,18 +88,6 @@ class PolyhedralTron(ShowBase):
             self.playerCycle.rotateStep(1)
         
     ###    TASKS    ###
-    def doStep(self, task):
-        #self.taskMgr.add(self.groundColTask, 'GroundCollisionHandlingTask')
-        #if ENABLE_STEPWISE:
-        #    self.accept('space', self.doStep)
-        self.groundColTask(task)
-        self.cameraMoveTask(task)
-        if ENABLE_STEPWISE:
-            if MAX_STEPS != 0:
-                self.steps += 1
-            if MAX_STEPS == 0 or self.steps < MAX_STEPS:
-                return Task.cont
-    
     def groundColTask(self, task):
         #print "Testing collisions..."
         self.playerCycle.moveForwardBy(0.25)
@@ -118,24 +99,6 @@ class PolyhedralTron(ShowBase):
             self.steps += 1
             if not ENABLE_STEPWISE:
                 return Task.cont
-
-    def cameraMoveTask(self, task):
-        cycPos = self.playerCycle.cycle.getPos()
-        cycQuat = self.playerCycle.cycle.getQuat()
-        camPos = self.camera.getPos()
-        z = cycQuat.getUp()
-        y = cycQuat.getForward()
-        offset = z*3-y*8
-        newCamPos = cycPos + offset
-        if (newCamPos - camPos).length() > CAMERA_SPEED:
-            direction = newCamPos - camPos
-            direction.normalize()
-            direction = direction * CAMERA_SPEED
-            self.camera.setPos(camera.getPos() + direction)
-        else:
-            self.camera.setPos(newCamPos)
-        self.camera.lookAt(cycPos + z*2, z)
-        return Task.cont
 
         
 
