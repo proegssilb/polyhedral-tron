@@ -44,20 +44,22 @@ class PolyhedralTron(ShowBase):
         self.collTrav = CollisionTraverser('GroundTrav')
         base.collTrav.setRespectPrevTransform(True)       
 
-        self.playerCycle = LightCycle(self, render, Vec3(1,1,-1), (.4, .4, .8, 1), self.collTrav)
+        self.playerCycle = LightCycle(self, "Blue", render, Vec3(1,1,-1), (.4, .4, .8, 1), self.collTrav)
 
-        self.enemyCycle = LightCycle(self, render, Vec3(0, 0, -1), (0.8, .4, .4, 1), self.collTrav)
+        self.enemyCycle = LightCycle(self, "Red", render, Vec3(0, 0, -1), (0.8, .4, .4, 1), self.collTrav)
 
         self.setupCamera()
         self.registerKeys()
         self.task = self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
         self.steps = 0
     
-    def reset(self):
+    def endGame(self):
         self.world.detachNode()
         self.world.removeNode()
+        self.playerCycle.cleanup()
+        self.enemyCycle.cleanup()
         self.taskMgr.remove(self.task)
-        self.menu.show()
+        self.menu.fadeIn()
 
     def quit(self):
         exit()

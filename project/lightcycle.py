@@ -10,6 +10,7 @@ from panda3d.physics import LinearNoiseForce,DiscEmitter
 from direct.particles.Particles import Particles
 from direct.particles.ParticleEffect import ParticleEffect
 from direct.particles.ForceGroup import ForceGroup
+from direct.gui.DirectGui import DirectLabel
 import math, sys
 from panda3d.core import Filename
 
@@ -28,9 +29,12 @@ class LightCycle(DirectObject):
     enable = True
     
 
-    def __init__(self, app, parentNode, startingPoint, color, collisionTraverser):
+    def __init__(self, app, playerName, parentNode, startingPoint, color, collisionTraverser):
+        assert isinstance(playerName, str)
+        self.playerName = playerName
         self.app = app
         self.color = color
+        self.deathLabel = None
 
         self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
@@ -169,21 +173,32 @@ class LightCycle(DirectObject):
         self.loadParticleConfig('trial.ptf')
         self.cycle.detachNode()
         self.enable = False
-        self.app.accept('escape', self.die)
-        self.task = self.app.taskMgr.doMethodLater(4, self.die, 'resetTask')
+        font = loader.loadFont('models/TRON.ttf')
+        self.deathLabel = DirectLabel(
+                text="%s died" % self.playerName,
+                text_font=font,
+                text_fg=(1, 1, 1, 1),
+                frameColor=(0, 0, 0, 0),
+                scale=0.1)
+        if self.playerName == 'Blue':
+            self.app.accept('escape', self.app.endGame)
+            self.task = self.app.taskMgr.doMethodLater(4,
+                    (lambda t: self.app.endGame()),
+                    'resetTask')
         #li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
         #f = Func(self.die)
         #Sequence(li, li, li, li, name='SpinAndDie').loop()
         
         
-    def die(self, *pargs):
+    def cleanup(self, *pargs):
         self.cycle.removeNode()
         self.wallNode.detachNode()
         self.wallNode.removeNode()
+        if self.deathLabel is not None:
+            self.deathLabel.removeNode()
         if self.p is not None:
             self.p.cleanup()
             self.p = None
-        self.app.reset()
         self.app.taskMgr.remove(self.task)
         return Task.done
 
