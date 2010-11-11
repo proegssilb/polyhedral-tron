@@ -162,7 +162,8 @@ class LightCycle(DirectObject):
     def explode(self, *pargs):
         if not self.enable:
             return
-        self.loadParticleConfig('splody.ptf')
+        self.loadParticleConfig('splody3.ptf')
+        self.cycle.detachNode()
         self.enable = False
         self.app.accept('escape', self.die)
         self.task = self.app.taskMgr.doMethodLater(7, self.die, 'resetTask')
@@ -172,22 +173,25 @@ class LightCycle(DirectObject):
         
         
     def die(self, *pargs):
-        self.cycle.detachNode()
         self.cycle.removeNode()
         self.wallNode.detachNode()
         self.wallNode.removeNode()
-        if self.p is not None:
-            self.p.cleanup()
-            self.p = None
+        #if self.p is not None:
+        #    self.p.cleanup()
+        #    self.p = None
         self.app.reset()
         self.app.taskMgr.remove(self.task)
         return Task.done
 
     def loadParticleConfig(self, file):
-        if self.p is not None:
-            self.p.cleanup()
-            self.p = None
+        #if self.p is not None:
+        #    self.p.cleanup()
+        #    self.p = None
         self.p = ParticleEffect()
         self.p.loadConfig(Filename(file))
-        self.p.start(self.cycle)
+        dummy = render.attachNewNode('dummy')
+        dummy.setPos(self.cycle.getPos())
+        dummy.setQuat(self.cycle.getQuat())
+        self.p.start(dummy)
         self.p.setFluidPos(0,0,0)
+        self.app.taskMgr.doMethodLater(.2, lambda *pargs: self.p.cleanup(), 'endParticle')

@@ -27,7 +27,7 @@ class PolyhedralTron(ShowBase):
         base.win.requestProperties(wp)
         base.win.setClearColor(VBase4(0, 0, 0, 0))
         self.setupLights()
-        render.setShaderAuto()
+        #render.setShaderAuto()
         self.menu = MainMenu(self)
 
     def startGame(self):
@@ -50,7 +50,6 @@ class PolyhedralTron(ShowBase):
         self.steps = 0
     
     def reset(self):
-        del self.playerCycle
         self.world.detachNode()
         self.world.removeNode()
         self.taskMgr.remove(self.task)
@@ -70,7 +69,7 @@ class PolyhedralTron(ShowBase):
         self.light = PointLight('pointLight')
         self.light.setColor(Vec4(1, 1, 1, 1))
         self.light.setLens(PerspectiveLens())
-        self.light.setShadowCaster(True)
+        #self.light.setShadowCaster(True)
         self.lPath = render.attachNewNode(self.light)
         self.lPath.setPos(Point3(50, 50, 50))
         render.setLight(self.lPath)
