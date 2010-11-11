@@ -141,9 +141,9 @@ class LightCycle(DirectObject):
     def explode(self):
         self.loadParticleConfig('smokering.ptf')
         self.enable = False
-##        li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
-##        f = Func(self.die)
-##        Sequence(li, li, li, li, name='SpinAndDie').loop()
+        #li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
+        #f = Func(self.die)
+        #Sequence(li, li, li, li, name='SpinAndDie').loop()
         
         
     def die(self):
