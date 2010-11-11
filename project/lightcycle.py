@@ -29,7 +29,7 @@ class LightCycle(DirectObject):
     def __init__(self, parentNode, startingPoint, collisionTraverser):
         self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
-        self.cycle.setPos(startingPoint)
+        self.cycle.setFluidPos(startingPoint)
         self.enable = True
 
         #Collision related stuff...
@@ -64,7 +64,7 @@ class LightCycle(DirectObject):
         forVect = self.cycle.getQuat().getForward()
         positionIncrement = forVect * dist
         newPos = self.cycle.getPos() + positionIncrement
-        self.cycle.setPos(newPos)
+        self.cycle.setFluidPos(newPos)
         if (self.currentWall.getDistMoved() >= 1.0):
             self.newWall()
         else:
@@ -123,7 +123,7 @@ class LightCycle(DirectObject):
         newP = newP / count
         norm.normalize()
         up = self.cycle.getQuat().getUp()
-        self.cycle.setPos(newP)
+        self.cycle.setFluidPos(newP)
         self.setUp(norm)
         if (up.angleDeg(norm) > 5):
             self.newWall()
@@ -154,4 +154,4 @@ class LightCycle(DirectObject):
         self.p = ParticleEffect()
         self.p.loadConfig(Filename(file))
         self.p.start(self.cycle)
-        self.p.setPos(0,0,0)
+        self.p.setFluidPos(0,0,0)

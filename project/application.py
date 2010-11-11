@@ -36,6 +36,7 @@ class PolyhedralTron(ShowBase):
         self.world.setTexture(self.worldTex)
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
+        base.collTrav.setRespectPrevTransform(True)       
         self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
         self.setupCamera()
         self.setupLights()
