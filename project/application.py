@@ -4,6 +4,7 @@ from direct.task import Task
 from panda3d.core import Vec3, Vec4, Point3, VBase4
 from panda3d.core import CollisionTraverser
 from panda3d.core import Light, Spotlight, PointLight, AmbientLight, PerspectiveLens
+from panda3d.core import WindowProperties
 
 from menu import MainMenu
 from lightcycle import LightCycle
@@ -20,8 +21,13 @@ class PolyhedralTron(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
+        wp = WindowProperties()
+        wp.setFullscreen(True)
+        wp.setSize(1920,1200)
+        base.win.requestProperties(wp)
         base.win.setClearColor(VBase4(0, 0, 0, 0))
         self.modelFile = 'models/icosahedron'
+        self.setupLights()
         self.menu = MainMenu(self)
 
     def startGame(self):
@@ -37,12 +43,18 @@ class PolyhedralTron(ShowBase):
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
         base.collTrav.setRespectPrevTransform(True)       
-        self.playerCycle = LightCycle(render, Vec3(1,1,-1), self.collTrav)
+        self.playerCycle = LightCycle(self, render, Vec3(1,1,-1), self.collTrav)
         self.setupCamera()
-        self.setupLights()
         self.registerKeys()
-        self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
+        self.task = self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
         self.steps = 0
+    
+    def reset(self):
+        self.cycle = None
+        self.world.detachNode()
+        self.world.removeNode()
+        self.taskMgr.remove(self.task)
+        self.menu.show()
 
     def quit(self):
         exit()
@@ -92,7 +104,7 @@ class PolyhedralTron(ShowBase):
     ###    TASKS    ###
     def groundColTask(self, task):
         #print "Testing collisions..."
-        self.playerCycle.moveForwardBy(0.25)
+        self.playerCycle.moveForwardBy(.4)
         self.cameraTracker.move(task)
         self.collTrav.traverse(render)
         self.playerCycle.adjustToTerrain()

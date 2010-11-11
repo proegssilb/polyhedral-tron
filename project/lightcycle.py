@@ -26,15 +26,17 @@ class LightCycle(DirectObject):
     enable = True
     
 
-    def __init__(self, parentNode, startingPoint, collisionTraverser):
+    def __init__(self, app, parentNode, startingPoint, collisionTraverser):
+        self.app = app
         self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
         self.cycle.setFluidPos(startingPoint)
+        self.wallNode = parentNode.attachNewNode('walls')
         self.enable = True
 
         #Collision related stuff...
         self.groundRay = CollisionRay()
-        self.groundRay.setOrigin(0,0, 5)
+        self.groundRay.setOrigin(0,0, 1)
         self.groundRay.setDirection(0,0,-1)
         
         self.colNode = CollisionNode('cycleRay-%s' % id(self))
@@ -43,11 +45,11 @@ class LightCycle(DirectObject):
         self.colNode.setIntoCollideMask(BitMask32.allOff())
         
         self.colNodePath = self.cycle.attachNewNode(self.colNode)
-        self.colNodePath.show()
+        #self.colNodePath.show()
         self.colHandler = CollisionHandlerQueue()
         collisionTraverser.addCollider(self.colNodePath, self.colHandler)
 
-        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
+        self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
         self.currentWall.wall.setCollideMask(BitMask32(0x00))
 
         base.enableParticles()
@@ -65,7 +67,7 @@ class LightCycle(DirectObject):
         positionIncrement = forVect * dist
         newPos = self.cycle.getPos() + positionIncrement
         self.cycle.setFluidPos(newPos)
-        if (self.currentWall.getDistMoved() >= 1.0):
+        if (self.currentWall.getDistMoved() >= .75):
             self.newWall()
         else:
             self.currentWall.moveForwardBy(self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset,dist)
@@ -96,6 +98,7 @@ class LightCycle(DirectObject):
             if ent.getIntoNodePath().hasNetTag('wall'):
                 #The tag 'wall' is only given to walls.
                 self.explode()
+                return
             p1 = ent.getSurfacePoint(render)
             p2 = self.cycle.getPos()
             dot = p1.dot(p2)
@@ -134,20 +137,23 @@ class LightCycle(DirectObject):
         self.wallList.append(self.currentWall)
         self.currentWall.wall.setCollideMask(BitMask32.bit(0))
         self.currentWall.wall.setTag('wall','1')
-        self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
+        self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
         #self.currentWall.wall.setCollideMask(BitMask32(0x00))
         self.currentWall.wall.setCollideMask(BitMask32.bit(0))
     
     def explode(self):
         self.loadParticleConfig('smokering.ptf')
         self.enable = False
+        self.app.accept('escape', self.die)
         #li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
         #f = Func(self.die)
         #Sequence(li, li, li, li, name='SpinAndDie').loop()
         
         
     def die(self):
-        sys.exit()
+        self.cycle.detachNode()
+        self.wallNode.detachNode()
+        self.app.reset()
 
     def loadParticleConfig(self, file):
         self.p.cleanup()
