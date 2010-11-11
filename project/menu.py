@@ -5,7 +5,8 @@ from __future__ import division
 from direct.showbase.ShowBase import ShowBase
 from direct.filter.CommonFilters import CommonFilters
 from direct.showbase import DirectObject
-from direct.gui.DirectGui import (DirectFrame, DirectLabel, DirectButton)
+from direct.gui.DirectGui import (DirectFrame, DirectLabel, DirectButton,
+                                  DirectRadioButton)
 from panda3d.core import TextFont, AntialiasAttrib
 
 
@@ -57,6 +58,25 @@ class MainMenu(DirectFrame):
         self.quitButton.reparentTo(self)
         self.quitButton.setAntialias(AntialiasAttrib.MLine)
 
+        self._modelFile = ["models/icosahedron"]
+        radios = [
+            DirectRadioButton(text="Icosahedron",
+                              variable=self._modelFile,
+                              value=["models/icosahedron"],
+                              **common),
+            DirectRadioButton(text="Sphere",
+                              variable=self._modelFile,
+                              value=["models/icosphere"],
+                              **common),
+            DirectRadioButton(text="Tetrahedron",
+                              variable=self._modelFile,
+                              value=["models/tetrahedron"],
+                              **common),
+        ]
+        for radio in radios:
+            radio.setOthers(radios)
+            radio.reparentTo(self)
+
         byline = DirectLabel(
                 text="David Bliss, Devin Banks, and Tom Most",
                 scale=0.7,
@@ -77,9 +97,16 @@ class MainMenu(DirectFrame):
                 (self.startButton, 1.4),
                 (self.quitButton, 1.4),
                 (None, 1),
+                (radios[0], 1),
+                (radios[1], 1),
+                (radios[2], 1),
+                (None, 1),
                 (byline, .8),
                 (class_, .8),
             )
+
+    modelFile = property(lambda s: s._modelFile[0],
+            doc="The current radio button game model selection")
 
 def positionMenuItems(*items):
     padding = 0.2
