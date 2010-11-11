@@ -9,8 +9,9 @@ from direct.filter.CommonFilters import CommonFilters
 from direct.showbase import DirectObject
 from direct.gui.DirectGui import (DirectFrame, DirectLabel, DirectButton,
                                   DirectRadioButton)
-from panda3d.core import (TextFont, AntialiasAttrib, NodePath, DirectionalLight,
-                          PerspectiveLens, VBase4, AmbientLight)
+from panda3d.core import (TextFont, AntialiasAttrib, TransparencyAttrib,
+                          NodePath, DirectionalLight,
+                          PerspectiveLens, Vec4, VBase4, AmbientLight)
 
 
 class MainMenu(DirectFrame):
@@ -22,6 +23,8 @@ class MainMenu(DirectFrame):
             )
         kwds.update(kwargs)
         DirectFrame.__init__(self, *args, **kwds)
+
+        self.setTransparency(TransparencyAttrib.MAlpha)
 
         font = loader.loadFont('models/TRON.ttf')
         #font.setPixelsPerUnit(180)
@@ -64,9 +67,9 @@ class MainMenu(DirectFrame):
         self._worldModel = ["models/icosahedron"]
         radioRow = self.attachNewNode("worldModelRadios")
         radios = self._generateWorldModelRadios(radioRow, [
-            ("", "models/icosahedron", 1, (-3, +10, 0)),
-            ("", "models/icosphere",   1, ( 0, +10, 0)),
-            ("", "models/tetrahedron", 1, ( 3, +10, 0)),
+            ("models/icosahedron", (-3, +10, 0), (333, -59, 0)),
+            ("models/icosphere",   ( 0, +10, 0), (0, 0, 0)),
+            ("models/tetrahedron", ( 3, +10, 0), (0, 0, 0)),
         ], common)
 
         dirLight1 = DirectionalLight('menuDirectionalLight1')
@@ -113,6 +116,13 @@ class MainMenu(DirectFrame):
                 (class_, .8),
             )
 
+    def fadeOut(self, fadeDuration=1):
+        self.colorScaleInterval(fadeDuration, Vec4(1, 1, 1, 1), Vec4(1, 1, 1, 0))
+        taskMgr.doMethodLater(fadeDuration, lambda t: self.hide(), "Hide main menu")
+
+    def fadeIn(self, fadeDuration=1):
+        self.colorScaleInterval(fadeDuration, Vec4(1, 1, 1, 0), Vec4(1, 1, 1, 1))
+        self.show()
 
     worldModel = property(lambda s: s._worldModel[0],
             doc="The current radio button game model selection")
@@ -120,16 +130,15 @@ class MainMenu(DirectFrame):
     def _generateWorldModelRadios(self, parent, radioProtos, common):
         radios = []
 
-        for (text, worldModel, scale, pos) in radioProtos:
+        for (worldModel, pos, hpr) in radioProtos:
             geom = loader.loadModel(worldModel + "_small")
             geom.setColor(1, 1, 1, 1)
 
             radios.append(DirectRadioButton(
-                text=text,
                 pos=pos,
                 boxImage=None,
                 geom=geom,
-                geom_scale=scale,
+                geom_hpr=hpr,
                 variable=self._worldModel,
                 value=[worldModel],
                 **common
@@ -138,6 +147,7 @@ class MainMenu(DirectFrame):
         for radio in radios:
             radio.setOthers(radios)
             radio.reparentTo(parent)
+            radio.place()
 
         return radios
 
@@ -159,9 +169,9 @@ class MenuDemo(ShowBase):
         # else should try it.
         # This didn't have the intended effect on David's
         # computer. Not work for GUI?
-        #filters = CommonFilters(base.win, base.cam)
-        #if not filters.setBloom(desat=0, ):
-        #    print "Failed to enable bloom filter"
+        filters = CommonFilters(base.win, base.cam)
+        if not filters.setBloom():
+            print "Failed to enable bloom filter"
 
         self.mainMenu = MainMenu(self)
         # Automatically reparented to aspect2d

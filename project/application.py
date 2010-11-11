@@ -31,7 +31,7 @@ class PolyhedralTron(ShowBase):
         self.menu = MainMenu(self)
 
     def startGame(self):
-        self.menu.hide()
+        self.menu.fadeOut()
         #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
         #      and re-export. Using scale 10 for now.
         #self.world.setScale(10.0)
