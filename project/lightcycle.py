@@ -1,7 +1,9 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.interval.IntervalGlobal import *
+from direct.task import Task
 from panda3d.core import Vec3, Vec4, Quat, BitMask32, Point3, VBase3
 from panda3d.core import CollisionRay, CollisionHandlerQueue, CollisionNode, CollisionHandlerFloor
+from panda3d.core import CollisionHandlerEvent, CollisionTube, CollisionSegment, CollisionSphere
 from panda3d.physics import BaseParticleEmitter,BaseParticleRenderer
 from panda3d.physics import PointParticleFactory,SpriteParticleRenderer
 from panda3d.physics import LinearNoiseForce,DiscEmitter
@@ -38,16 +40,31 @@ class LightCycle(DirectObject):
         self.groundRay = CollisionRay()
         self.groundRay.setOrigin(0,0, 1)
         self.groundRay.setDirection(0,0,-1)
-        
         self.colNode = CollisionNode('cycleRay-%s' % id(self))
         self.colNode.addSolid(self.groundRay)
         self.colNode.setFromCollideMask(BitMask32.bit(0))
-        self.colNode.setIntoCollideMask(BitMask32.allOff())
-        
+        self.colNode.setIntoCollideMask(BitMask32.allOff())        
         self.colNodePath = self.cycle.attachNewNode(self.colNode)
-        #self.colNodePath.show()
         self.colHandler = CollisionHandlerQueue()
         collisionTraverser.addCollider(self.colNodePath, self.colHandler)
+        
+        #Wall colliding stuff...
+        self.colEventHandler = CollisionHandlerEvent()
+        self.colEventHandler.addInPattern('%fn-into%(wall)ih')
+        #These numbers are loosely based on the cycle model.
+        self.colCapsule = CollisionSegment(0, 1.0, 0.5, 0, -0.2, 0.5)
+        #self.colCapsule2 = CollisionSphere(0, 0, 0.5, .5)
+        #self.colCapsule3 = CollisionSphere(0, -.7, 0.5, .5)
+        name = 'cycle-%s' % id(self)
+        self.colCycNode = CollisionNode(name)
+        self.colCycNode.addSolid(self.colCapsule)
+        #self.colCycNode.addSolid(self.colCapsule2)
+        #self.colCycNode.addSolid(self.colCapsule3)
+        self.colCycNode.setCollideMask(BitMask32.bit(1))
+        self.colCycNP = self.cycle.attachNewNode(self.colCycNode)
+        self.accept('%s-into' % name, self.explode)
+        collisionTraverser.addCollider(self.colCycNP, self.colEventHandler)
+        
 
         self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
         self.currentWall.wall.setCollideMask(BitMask32(0x00))
@@ -83,7 +100,8 @@ class LightCycle(DirectObject):
         angle = -90*numSteps
         q = Quat()
         q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
-        self.cycle.setQuat(self.cycle.getQuat()*q)
+        qi = self.cycle.quatInterval(.075, self.cycle.getQuat()*q)
+        qi.start()
         self.newWall()
 
     def adjustToTerrain(self):
@@ -135,17 +153,19 @@ class LightCycle(DirectObject):
         if not self.enable:
             return
         self.wallList.append(self.currentWall)
-        self.currentWall.wall.setCollideMask(BitMask32.bit(0))
+        self.currentWall.wall.setCollideMask(BitMask32.bit(1))
         self.currentWall.wall.setTag('wall','1')
         self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
         #self.currentWall.wall.setCollideMask(BitMask32(0x00))
-        self.currentWall.wall.setCollideMask(BitMask32.bit(0))
+        self.currentWall.wall.setCollideMask(BitMask32.bit(1))
     
-    def explode(self):
+    def explode(self, *pargs):
+        if not self.enable:
+            return
         self.loadParticleConfig('smokering.ptf')
         self.enable = False
         self.app.accept('escape', self.die)
-        self.app.taskMgr.doMethodLater(7, self.die, 'resetTask')
+        self.task = self.app.taskMgr.doMethodLater(7, self.die, 'resetTask')
         #li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
         #f = Func(self.die)
         #Sequence(li, li, li, li, name='SpinAndDie').loop()
@@ -153,11 +173,20 @@ class LightCycle(DirectObject):
         
     def die(self, *pargs):
         self.cycle.detachNode()
+        self.cycle.removeNode()
         self.wallNode.detachNode()
+        self.wallNode.removeNode()
+        if self.p is not None:
+            self.p.cleanup()
+            self.p = None
         self.app.reset()
+        self.app.taskMgr.remove(self.task)
+        return Task.done
 
     def loadParticleConfig(self, file):
-        self.p.cleanup()
+        if self.p is not None:
+            self.p.cleanup()
+            self.p = None
         self.p = ParticleEffect()
         self.p.loadConfig(Filename(file))
         self.p.start(self.cycle)
