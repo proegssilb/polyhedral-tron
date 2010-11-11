@@ -28,11 +28,15 @@ class LightCycle(DirectObject):
     enable = True
     
 
-    def __init__(self, app, parentNode, startingPoint, collisionTraverser):
+    def __init__(self, app, parentNode, startingPoint, color, collisionTraverser):
         self.app = app
+        self.color = color
+
         self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
         self.cycle.setFluidPos(startingPoint)
+        self.cycle.setColorScale(*color)
+
         self.wallNode = parentNode.attachNewNode('walls')
         self.enable = True
 
@@ -66,7 +70,7 @@ class LightCycle(DirectObject):
         collisionTraverser.addCollider(self.colCycNP, self.colEventHandler)
         
 
-        self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
+        self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat(), self.color)
         self.currentWall.wall.setCollideMask(BitMask32(0x00))
 
         base.enableParticles()
@@ -155,7 +159,7 @@ class LightCycle(DirectObject):
         self.wallList.append(self.currentWall)
         self.currentWall.wall.setCollideMask(BitMask32.bit(1))
         self.currentWall.wall.setTag('wall','1')
-        self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
+        self.currentWall = Wall(self.wallNode, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat(), color=self.color)
         #self.currentWall.wall.setCollideMask(BitMask32(0x00))
         self.currentWall.wall.setCollideMask(BitMask32.bit(1))
     

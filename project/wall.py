@@ -9,11 +9,12 @@ class Wall(DirectObject):
     wall = None
     distMoved = 0
 
-    def __init__(self, parentNode, startingPoint, quat):
+    def __init__(self, parentNode, startingPoint, quat, color):
         self.wall = loader.loadModel('models/wall')
         self.wall.reparentTo(parentNode)
         self.wall.setPos(startingPoint)
         self.wall.setQuat(quat)
+        self.wall.setColorScale(*color)
 
     def moveForwardBy(self, position, dist):
         self.distMoved += dist

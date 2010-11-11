@@ -43,7 +43,11 @@ class PolyhedralTron(ShowBase):
         self.world.reparentTo(render)
         self.collTrav = CollisionTraverser('GroundTrav')
         base.collTrav.setRespectPrevTransform(True)       
-        self.playerCycle = LightCycle(self, render, Vec3(1,1,-1), self.collTrav)
+
+        self.playerCycle = LightCycle(self, render, Vec3(1,1,-1), (.4, .4, .8, 1), self.collTrav)
+
+        self.enemyCycle = LightCycle(self, render, Vec3(0, 0, -1), (0.8, .4, .4, 1), self.collTrav)
+
         self.setupCamera()
         self.registerKeys()
         self.task = self.taskMgr.add(self.groundColTask, "GroundCollisionHandlingTask")
@@ -107,10 +111,11 @@ class PolyhedralTron(ShowBase):
     def groundColTask(self, task):
         #print "Testing collisions..."
         self.playerCycle.moveForwardBy(.4)
+        self.enemyCycle.moveForwardBy(.4)
         self.cameraTracker.move(task)
         self.collTrav.traverse(render)
         self.playerCycle.adjustToTerrain()
-        #self.cameraTracker.adjustToTerrain()
+        self.enemyCycle.adjustToTerrain()
         if self.steps < MAX_STEPS or MAX_STEPS == 0:
             self.steps += 1
             if not ENABLE_STEPWISE:
