@@ -162,7 +162,7 @@ class LightCycle(DirectObject):
     def explode(self, *pargs):
         if not self.enable:
             return
-        self.loadParticleConfig('smokering.ptf')
+        self.loadParticleConfig('splody.ptf')
         self.enable = False
         self.app.accept('escape', self.die)
         self.task = self.app.taskMgr.doMethodLater(7, self.die, 'resetTask')
