@@ -98,7 +98,7 @@ class PolyhedralTron(ShowBase):
         self.accept('arrow_right', self.keyRight)
         self.accept('a', self.keyLeft)
         self.accept('d', self.keyRight)
-        self.accept('escape', exit)
+        self.accept('escape', self.endGame)
         self.accept('q', exit)
 
     def keyLeft(self):

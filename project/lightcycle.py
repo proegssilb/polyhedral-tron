@@ -199,7 +199,8 @@ class LightCycle(DirectObject):
         if self.p is not None:
             self.p.cleanup()
             self.p = None
-        self.app.taskMgr.remove(self.task)
+        if hasattr(self, 'task') and self.task is not None:
+	        self.app.taskMgr.remove(self.task)
         return Task.done
 
     def loadParticleConfig(self, file):
