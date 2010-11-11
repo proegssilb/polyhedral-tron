@@ -145,12 +145,13 @@ class LightCycle(DirectObject):
         self.loadParticleConfig('smokering.ptf')
         self.enable = False
         self.app.accept('escape', self.die)
+        self.app.taskMgr.doMethodLater(7, self.die, 'resetTask')
         #li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
         #f = Func(self.die)
         #Sequence(li, li, li, li, name='SpinAndDie').loop()
         
         
-    def die(self):
+    def die(self, *pargs):
         self.cycle.detachNode()
         self.wallNode.detachNode()
         self.app.reset()
