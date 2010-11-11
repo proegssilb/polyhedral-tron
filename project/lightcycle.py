@@ -38,7 +38,7 @@ class LightCycle(DirectObject):
 
         #Collision related stuff...
         self.groundRay = CollisionRay()
-        self.groundRay.setOrigin(0,0, 1)
+        self.groundRay.setOrigin(0,0, 10)
         self.groundRay.setDirection(0,0,-1)
         self.colNode = CollisionNode('cycleRay-%s' % id(self))
         self.colNode.addSolid(self.groundRay)
@@ -128,7 +128,7 @@ class LightCycle(DirectObject):
             #print '    Dot product:', dot
             #print '    abs(surfPos):', mag1
             #print '    abs(cycPos):', mag2
-            if not (dot > 0 and mag1 >= mag2 - 0.5):
+            if not (dot > 0 and mag1 >= mag2 - 0.8):
             #if False:
                 entries.remove(ent)
             else:
@@ -162,11 +162,11 @@ class LightCycle(DirectObject):
     def explode(self, *pargs):
         if not self.enable:
             return
-        self.loadParticleConfig('splody3.ptf')
+        self.loadParticleConfig('trial.ptf')
         self.cycle.detachNode()
         self.enable = False
         self.app.accept('escape', self.die)
-        self.task = self.app.taskMgr.doMethodLater(7, self.die, 'resetTask')
+        self.task = self.app.taskMgr.doMethodLater(4, self.die, 'resetTask')
         #li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
         #f = Func(self.die)
         #Sequence(li, li, li, li, name='SpinAndDie').loop()
@@ -176,17 +176,17 @@ class LightCycle(DirectObject):
         self.cycle.removeNode()
         self.wallNode.detachNode()
         self.wallNode.removeNode()
-        #if self.p is not None:
-        #    self.p.cleanup()
-        #    self.p = None
+        if self.p is not None:
+            self.p.cleanup()
+            self.p = None
         self.app.reset()
         self.app.taskMgr.remove(self.task)
         return Task.done
 
     def loadParticleConfig(self, file):
-        #if self.p is not None:
-        #    self.p.cleanup()
-        #    self.p = None
+        if self.p is not None:
+            self.p.cleanup()
+            self.p = None
         self.p = ParticleEffect()
         self.p.loadConfig(Filename(file))
         dummy = render.attachNewNode('dummy')
@@ -194,4 +194,4 @@ class LightCycle(DirectObject):
         dummy.setQuat(self.cycle.getQuat())
         self.p.start(dummy)
         self.p.setFluidPos(0,0,0)
-        self.app.taskMgr.doMethodLater(.2, lambda *pargs: self.p.cleanup(), 'endParticle')
+        #self.app.taskMgr.doMethodLater(.2, lambda *pargs: self.p.cleanup(), 'endParticle')
