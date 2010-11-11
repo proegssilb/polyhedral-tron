@@ -2,7 +2,14 @@ from direct.showbase.DirectObject import DirectObject
 from direct.interval.IntervalGlobal import *
 from panda3d.core import Vec3, Vec4, Quat, BitMask32, Point3, VBase3
 from panda3d.core import CollisionRay, CollisionHandlerQueue, CollisionNode, CollisionHandlerFloor
+from panda3d.physics import BaseParticleEmitter,BaseParticleRenderer
+from panda3d.physics import PointParticleFactory,SpriteParticleRenderer
+from panda3d.physics import LinearNoiseForce,DiscEmitter
+from direct.particles.Particles import Particles
+from direct.particles.ParticleEffect import ParticleEffect
+from direct.particles.ForceGroup import ForceGroup
 import math, sys
+from panda3d.core import Filename
 
 from wall import Wall
 
@@ -42,6 +49,9 @@ class LightCycle(DirectObject):
 
         self.currentWall = Wall(render, self.cycle.getPos() + self.cycle.getQuat().getForward() * self.wallOffset, self.cycle.getQuat())
         self.currentWall.wall.setCollideMask(BitMask32(0x00))
+
+        base.enableParticles()
+        self.p = ParticleEffect()
         
     def setUp(self, upVect):
         rightVect = self.cycle.getQuat().getRight()
@@ -129,10 +139,19 @@ class LightCycle(DirectObject):
         self.currentWall.wall.setCollideMask(BitMask32.bit(0))
     
     def explode(self):
+        self.loadParticleConfig('smokering.ptf')
         self.enable = False
         li = self.cycle.hprInterval(0.5, VBase3(359, 0, 0), name='spin')
         f = Func(self.die)
         Sequence(li, li, li, li, name='SpinAndDie').loop()
         
+        
     def die(self):
         sys.exit()
+
+    def loadParticleConfig(self, file):
+        self.p.cleanup()
+        self.p = ParticleEffect()
+        self.p.loadConfig(Filename(file))
+        self.p.start(self.cycle)
+        self.p.setPos(0,0,0)
