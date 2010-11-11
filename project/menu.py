@@ -2,12 +2,15 @@
 
 from __future__ import division
 
+from copy import copy
+
 from direct.showbase.ShowBase import ShowBase
 from direct.filter.CommonFilters import CommonFilters
 from direct.showbase import DirectObject
 from direct.gui.DirectGui import (DirectFrame, DirectLabel, DirectButton,
                                   DirectRadioButton)
-from panda3d.core import TextFont, AntialiasAttrib
+from panda3d.core import (TextFont, AntialiasAttrib, NodePath, DirectionalLight,
+                          PerspectiveLens, VBase4, AmbientLight)
 
 
 class MainMenu(DirectFrame):
@@ -58,24 +61,31 @@ class MainMenu(DirectFrame):
         self.quitButton.reparentTo(self)
         self.quitButton.setAntialias(AntialiasAttrib.MLine)
 
-        self._modelFile = ["models/icosahedron"]
-        radios = [
-            DirectRadioButton(text="Icosahedron",
-                              variable=self._modelFile,
-                              value=["models/icosahedron"],
-                              **common),
-            DirectRadioButton(text="Sphere",
-                              variable=self._modelFile,
-                              value=["models/icosphere"],
-                              **common),
-            DirectRadioButton(text="Tetrahedron",
-                              variable=self._modelFile,
-                              value=["models/tetrahedron"],
-                              **common),
-        ]
-        for radio in radios:
-            radio.setOthers(radios)
-            radio.reparentTo(self)
+        self._worldModel = ["models/icosahedron"]
+        radioRow = self.attachNewNode("worldModelRadios")
+        radios = self._generateWorldModelRadios(radioRow, [
+            ("", "models/icosahedron", 1, (-3, +10, 0)),
+            ("", "models/icosphere",   1, ( 0, +10, 0)),
+            ("", "models/tetrahedron", 1, ( 3, +10, 0)),
+        ], common)
+
+        dirLight1 = DirectionalLight('menuDirectionalLight1')
+        dirLight1.setColor(VBase4(1, 0, 0, 1))
+        pl1Path = radioRow.attachNewNode(dirLight1)
+        pl1Path.setPos(2, -3, -4)
+        radioRow.setLight(pl1Path)
+
+        dirLight2 = DirectionalLight('menuDirectionalLight2')
+        dirLight2.setColor(VBase4(0, 0, 1, 1))
+        pl2Path = radioRow.attachNewNode(dirLight1)
+        pl2Path.setPos(-2, -3, -4)
+        radioRow.setLight(pl2Path)
+
+        ambientLight = AmbientLight('menuAmbientLight')
+        ambientLight.setColor(VBase4(0.2, 0.2, 0.2, 1))
+        alPath = radioRow.attachNewNode(ambientLight)
+        radioRow.setLight(alPath)
+
 
         byline = DirectLabel(
                 text="David Bliss, Devin Banks, and Tom Most",
@@ -97,16 +107,39 @@ class MainMenu(DirectFrame):
                 (self.startButton, 1.4),
                 (self.quitButton, 1.4),
                 (None, 1),
-                (radios[0], 1),
-                (radios[1], 1),
-                (radios[2], 1),
+                (radioRow, 1.5),
                 (None, 1),
                 (byline, .8),
                 (class_, .8),
             )
 
-    modelFile = property(lambda s: s._modelFile[0],
+
+    worldModel = property(lambda s: s._worldModel[0],
             doc="The current radio button game model selection")
+
+    def _generateWorldModelRadios(self, parent, radioProtos, common):
+        radios = []
+
+        for (text, worldModel, scale, pos) in radioProtos:
+            geom = loader.loadModel(worldModel + "_small")
+            geom.setColor(1, 1, 1, 1)
+
+            radios.append(DirectRadioButton(
+                text=text,
+                pos=pos,
+                boxImage=None,
+                geom=geom,
+                geom_scale=scale,
+                variable=self._worldModel,
+                value=[worldModel],
+                **common
+            ))
+
+        for radio in radios:
+            radio.setOthers(radios)
+            radio.reparentTo(parent)
+
+        return radios
 
 def positionMenuItems(*items):
     padding = 0.2

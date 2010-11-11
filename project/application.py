@@ -26,7 +26,6 @@ class PolyhedralTron(ShowBase):
         wp.setSize(1920,1200)
         base.win.requestProperties(wp)
         base.win.setClearColor(VBase4(0, 0, 0, 0))
-        self.modelFile = 'models/icosahedron'
         self.setupLights()
         self.menu = MainMenu(self)
 
@@ -35,7 +34,7 @@ class PolyhedralTron(ShowBase):
         #TODO: Collisions can be sensitive to setScale, so change scale in Blender,
         #      and re-export. Using scale 10 for now.
         #self.world.setScale(10.0)
-        self.world = loader.loadModel(self.menu.modelFile)
+        self.world = loader.loadModel(self.menu.worldModel)
         self.world.setHpr(0,0,90)
         self.world.setColor(1, 1, 1)
         self.worldTex = loader.loadTexture('models/greenTriTex.png')
