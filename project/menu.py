@@ -65,29 +65,29 @@ class MainMenu(DirectFrame):
         self.quitButton.setAntialias(AntialiasAttrib.MLine)
 
         self._worldModel = ["models/icosahedron"]
-        radioRow = self.attachNewNode("worldModelRadios")
-        radios = self._generateWorldModelRadios(radioRow, [
-            ("models/icosahedron", (-3, +10, 0), (333, -59, 0)),
-            ("models/icosphere",   ( 0, +10, 0), (0, 0, 0)),
-            ("models/tetrahedron", ( 3, +10, 0), (0, 0, 0)),
+        #radioRow = self.attachNewNode("worldModelRadios")
+        radios = self._generateWorldModelRadios(self, [
+            ("Icosahedron", "models/icosahedron", (-3, +10, 0), (333, -59, 0)),
+            ("Icosphere",   "models/icosphere",   ( 0, +10, 0), (0, 0, 0)),
+            ("Tetrahedron", "models/tetrahedron", ( 3, +10, 0), (0, 0, 0)),
         ], common)
 
-        dirLight1 = DirectionalLight('menuDirectionalLight1')
-        dirLight1.setColor(VBase4(1, 0, 0, 1))
-        pl1Path = radioRow.attachNewNode(dirLight1)
-        pl1Path.setPos(2, -3, -4)
-        radioRow.setLight(pl1Path)
+        #dirLight1 = DirectionalLight('menuDirectionalLight1')
+        #dirLight1.setColor(VBase4(1, 0, 0, 1))
+        #pl1Path = radioRow.attachNewNode(dirLight1)
+        #pl1Path.setPos(2, -3, -4)
+        #radioRow.setLight(pl1Path)
 
-        dirLight2 = DirectionalLight('menuDirectionalLight2')
-        dirLight2.setColor(VBase4(0, 0, 1, 1))
-        pl2Path = radioRow.attachNewNode(dirLight1)
-        pl2Path.setPos(-2, -3, -4)
-        radioRow.setLight(pl2Path)
+        #dirLight2 = DirectionalLight('menuDirectionalLight2')
+        #dirLight2.setColor(VBase4(0, 0, 1, 1))
+        #pl2Path = radioRow.attachNewNode(dirLight1)
+        #pl2Path.setPos(-2, -3, -4)
+        #radioRow.setLight(pl2Path)
 
-        ambientLight = AmbientLight('menuAmbientLight')
-        ambientLight.setColor(VBase4(0.2, 0.2, 0.2, 1))
-        alPath = radioRow.attachNewNode(ambientLight)
-        radioRow.setLight(alPath)
+        #ambientLight = AmbientLight('menuAmbientLight')
+        #ambientLight.setColor(VBase4(0.2, 0.2, 0.2, 1))
+        #alPath = radioRow.attachNewNode(ambientLight)
+        #radioRow.setLight(alPath)
 
 
         byline = DirectLabel(
@@ -104,17 +104,17 @@ class MainMenu(DirectFrame):
             )
         class_.reparentTo(self)
 
-        positionMenuItems(
+        positionMenuItems([
                 (title, 2),
                 (None, 1),
                 (self.startButton, 1.4),
                 (self.quitButton, 1.4),
-                (None, 1),
-                (radioRow, 1.5),
+                (None, 0.5),
+            ] + [(r, 1) for r in radios] + [
                 (None, 1),
                 (byline, .8),
                 (class_, .8),
-            )
+            ])
 
     def fadeOut(self, fadeDuration=1):
         self.colorScaleInterval(fadeDuration, Vec4(1, 1, 1, 1), Vec4(1, 1, 1, 0))
@@ -130,15 +130,16 @@ class MainMenu(DirectFrame):
     def _generateWorldModelRadios(self, parent, radioProtos, common):
         radios = []
 
-        for (worldModel, pos, hpr) in radioProtos:
-            geom = loader.loadModel(worldModel + "_small")
-            geom.setColor(1, 1, 1, 1)
+        for (name, worldModel, pos, hpr) in radioProtos:
+            #geom = loader.loadModel(worldModel + "_small")
+            #geom.setColor(1, 1, 1, 1)
 
             radios.append(DirectRadioButton(
+                text=name,
                 pos=pos,
-                boxImage=None,
-                geom=geom,
-                geom_hpr=hpr,
+                #boxImage=None,
+                #geom=geom,
+                #geom_hpr=hpr,
                 variable=self._worldModel,
                 value=[worldModel],
                 **common
@@ -150,7 +151,7 @@ class MainMenu(DirectFrame):
 
         return radios
 
-def positionMenuItems(*items):
+def positionMenuItems(items):
     padding = 0.2
     totalHeight = sum(h for (_, h) in items) + (padding * (len(items) - 1))
     zPos = totalHeight / 2
