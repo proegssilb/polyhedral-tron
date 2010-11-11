@@ -147,7 +147,6 @@ class MainMenu(DirectFrame):
         for radio in radios:
             radio.setOthers(radios)
             radio.reparentTo(parent)
-            radio.place()
 
         return radios
 
