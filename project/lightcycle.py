@@ -35,6 +35,7 @@ class LightCycle(DirectObject):
         self.app = app
         self.color = color
         self.deathLabel = None
+        self.turnInterval = None
 
         self.cycle = loader.loadModel('models/lightcycle')
         self.cycle.reparentTo(parentNode)
@@ -107,9 +108,14 @@ class LightCycle(DirectObject):
         print 'Rotating...', numSteps
         angle = -90*numSteps
         q = Quat()
-        q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
-        qi = self.cycle.quatInterval(.075, self.cycle.getQuat()*q)
-        qi.start()
+        try:
+            q.setFromAxisAngle(angle, self.cycle.getQuat().getUp())
+        except AssertionError: # Can't turn
+            return
+        if self.turnInterval is not None and self.turnInterval.isPlaying():
+            self.turnInterval.pause()
+        self.turnInterval = self.cycle.quatInterval(.075, self.cycle.getQuat()*q)
+        self.turnInterval.start()
         self.newWall()
 
     def adjustToTerrain(self):
